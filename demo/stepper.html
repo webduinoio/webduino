@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-stepper.html'></link>
+
+  <style>
+    img {
+      width: 200px;
+    }
+  </style>
+</head>
+
+<body>
+  <web-arduino id='board' device='wahaha'>
+    <wa-stepper id='stepper'></wa-stepper>
+  </web-arduino>
+
+  <img src="http://www.hua.com/flower_picture/meiguihua/images/r17.jpg"></img>
+  <button id='rotate'>旋轉</button>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+
+    board.on('ready', function() {
+      var rotate = document.getElementById('rotate'),
+        stepper = document.getElementById('stepper');
+
+      rotate.addEventListener('click', function() {
+        stepper.rotate();
+      }, false);
+    });
+  }, false);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Button.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var events, button,
+        self = this,
+        Button = webduino.module.Button,
+        ButtonEvent = webduino.module.ButtonEvent;
+
+      events = new webduino.Events();
+      button = new Button(board, board.getDigitalPin(self.pin), Button.PULL_DOWN);
+
+      self.events_ = events;
+      self.button = button;
+
+      button.on(ButtonEvent.PRESS, function(event) {
+        events.emit('pressed');
+      });
+
+      button.on(ButtonEvent.RELEASE, function(event) {
+        events.emit('released');
+      });
+
+      button.on(ButtonEvent.SUSTAINED_PRESS, function(event) {
+        events.emit('sustainedPress');
+      });
+
+      button.on(ButtonEvent.LONG_PRESS, function(event) {
+        events.emit('longPress');
+      });
+    };
+
+    proto.on = function(eventType, handler) {
+      this.events_.on(eventType, handler);
+    };
+
+    proto.off = function(eventType, handler) {
+      this.events_.off(eventType, handler);
+    };
+
+    document.registerElement('wa-button', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

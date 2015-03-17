@@ -1,0 +1,58 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Pir.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var events, pir,
+        self = this,
+        Pir = webduino.module.Pir,
+        PirEvent = webduino.module.PirEvent;
+
+      events = new webduino.Events();
+      pir = new Pir(board, board.getDigitalPin(self.pin));
+
+      self.events_ = events;
+      self.pir = pir;
+
+      pir.on(PirEvent.DETECTED, function() {
+        events.emit('detected');
+      });
+
+      pir.on(PirEvent.ENDED, function() {
+        events.emit('ended');
+      });
+    };
+
+    proto.on = function(eventType, handler) {
+      this.events_.on(eventType, handler);
+    };
+
+    proto.off = function(eventType, handler) {
+      this.events_.off(eventType, handler);
+    };
+
+    document.registerElement('wa-pir', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

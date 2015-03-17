@@ -1,0 +1,58 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Sound.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var events, sound,
+        self = this,
+        Sound = webduino.module.Sound,
+        SoundEvent = webduino.module.SoundEvent;
+
+      events = new webduino.Events();
+      sound = new Sound(board, board.getDigitalPin(self.pin));
+
+      self.events_ = events;
+      self.sound = sound;
+
+      sound.on(SoundEvent.DETECTED, function() {
+        events.emit('detected');
+      });
+
+      sound.on(SoundEvent.ENDED, function() {
+        events.emit('ended');
+      });
+    };
+
+    proto.on = function(eventType, handler) {
+      this.events_.on(eventType, handler);
+    };
+
+    proto.off = function(eventType, handler) {
+      this.events_.off(eventType, handler);
+    };
+
+    document.registerElement('wa-sound', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

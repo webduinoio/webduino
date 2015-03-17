@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-buzzer.html'></link>
+</head>
+
+<body>
+  <web-arduino id='board' device='wahaha'>
+    <wa-buzzer id='buzzer' pin='11' notes='E5,E5,REST,E5,REST,C5,E5,REST,G5' tempos='8,8,8,8,8,8,8,8,8' autoplay></wa-buzzer>
+  </web-arduino>
+</body>
+
+</html>

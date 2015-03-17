@@ -1,0 +1,58 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Shock.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var events, shock,
+        self = this,
+        Shock = webduino.module.Shock,
+        ShockEvent = webduino.module.ShockEvent;
+
+      events = new webduino.Events();
+      shock = new Shock(board, board.getDigitalPin(self.pin));
+
+      self.events_ = events;
+      self.shock = shock;
+
+      shock.on(ShockEvent.HIGH, function() {
+        events.emit('high');
+      });
+
+      shock.on(ShockEvent.LOW, function() {
+        events.emit('low');
+      });
+    };
+
+    proto.on = function(eventType, handler) {
+      this.events_.on(eventType, handler);
+    };
+
+    proto.off = function(eventType, handler) {
+      this.events_.off(eventType, handler);
+    };
+
+    document.registerElement('wa-shock', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

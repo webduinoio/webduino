@@ -1,0 +1,58 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Servo.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      },
+      angle: {
+        get: function() {
+          return this.getAttribute('angle');
+        },
+        set: function(val) {
+          this.setAttribute('angle', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var Servo = webduino.module.Servo;
+      this.servo = new Servo(board, board.getDigitalPin(this.pin));
+
+      if (this.angle !== null) {
+        this.servo.angle = this.angle
+      } else {
+        this.angle = 90;
+      }
+    };
+
+    proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
+      if (this.servo) {
+        switch (attrName) {
+          case 'angle':
+            this.servo.angle = newVal;
+            break;
+        }
+      }
+    };
+
+    document.registerElement('wa-servo', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

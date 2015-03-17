@@ -1,0 +1,112 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="js/wa.js"></script>
+  <script type="text/javascript" src="js/wa.event.js"></script>
+  <script type="text/javascript" src="../webduino-js/dist/webduino-base.min.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+
+    var count_ = 0;
+
+    var proto = Object.create(HTMLElement.prototype, {
+      device: {
+        get: function() {
+          return this.getAttribute('device');
+        },
+        set: function(val) {
+          this.setAttribute('device', val);
+        }
+      },
+      server: {
+        get: function() {
+          return this.getAttribute('server');
+        },
+        set: function(val) {
+          this.setAttribute('server', val);
+        }
+      }
+    });
+
+    proto.init = function() {
+      var board, ev,
+        self = this,
+        WebArduino = webduino.WebArduino,
+        BoardEvent = webduino.BoardEvent,
+        events = self.events_,
+        device = self.device,
+        server = self.server;
+
+      if (device) {
+        board = (server ? new WebArduino({
+          server: server,
+          device: self.device
+        }) : new WebArduino(device));
+        self.board = board;
+
+        board.on(BoardEvent.READY, function(event) {
+          var children = self.children;
+          for (var i = 0, len = children.length; i < len; i++) {
+            children[i].init_ && children[i].init_(board);
+          }
+          events.emit('ready', [event], self);
+
+          // boardsReady
+          --count_;
+          try {
+            if (count_ === 0) {
+              ev = new Event("boardsReady", {
+                "bubbles": true,
+                "cancelable": false
+              });
+              document.dispatchEvent(ev);
+            }
+          } catch (e) {
+            // nothing
+          }
+        });
+
+        board.on(BoardEvent.STRING_MESSAGE, function(event) {
+          events.emit('message', [event], self);
+        });
+      }
+    };
+
+    proto.on = function(eventType, handler) {
+      this.events_.on(eventType, handler);
+    };
+
+    proto.off = function(eventType, handler) {
+      this.events_.off(eventType, handler);
+    };
+
+    proto.sendString = function(message) {
+      this.board.sendString(message);
+    };
+
+    proto.systemReset = function(message) {
+      this.board.systemReset();
+      this.board.startup();
+    };
+
+    proto.createdCallback = function() {
+      ++count_;
+    };
+
+    proto.attachedCallback = function() {
+      this.events_ = new webduino.Events();
+      this.init();
+    };
+
+    document.registerElement('web-arduino', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-ultrasonic.html'></link>
+  <style>
+  #img {
+    width: 200px;
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id='board' device='Mj29'>
+    <wa-ultrasonic id='ultrasonic' trig='11' echo='10'></wa-ultrasonic>
+  </web-arduino>
+  <img id='img' src='http://www.hua.com/flower_picture/meiguihua/images/r17.jpg'></img>
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+
+    var board = document.getElementById('board');
+
+    board.on('ready', function() {
+      var ultrasonic = document.getElementById('ultrasonic'),
+        img = document.getElementById('img');
+
+      ultrasonic.ping(function(cm) {
+        if (cm < 400) {
+          img.style.width = cm * 10 + 'px';
+          img.style.height = cm * 10 + 'px';
+        }
+      }, 1000);
+    });
+    
+  }, false);
+  </script>
+</body>
+
+</html>

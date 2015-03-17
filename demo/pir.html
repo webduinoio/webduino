@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>pir</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-pir.html'></link>
+  <link rel='import' href='../wa-led.html'></link>
+  <style>
+  * {
+    font-size: 20px;
+  }
+  
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-pir id='pir' pin='9'></wa-pir>
+    <wa-led id='led' pin='6'></wa-led>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p>Led pin : 6</p>
+  <p>Pir pin : 9</p>
+  <p>利用人體紅外線感應，讓 Led 亮起來。</p>
+  <p id='ledstatus'>none</p>
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board'),
+      msg = document.getElementById('msg'),
+      device = document.getElementById('device'),
+      pir = document.getElementById('pir'),
+      led = document.getElementById('led'),
+      setBtn = document.getElementById('set'),
+      ledstatus = document.getElementById('ledstatus'),
+      times = 0;
+
+    device.setAttribute('value', localStorage.device || "");
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    function ready() {
+      // 示意 board ready
+      msg.className = "set";
+      run();
+    }
+
+    function run(times) {
+      pir.on('detected', function() {
+        led.on();
+        ledstatus.innerHTML = "LED on!" + ++times;
+      });
+      pir.on('ended', function() {
+        led.off();
+        ledstatus.innerHTML = "LED off!" + ++times;
+      });
+    }
+  });
+  </script>
+</body>
+
+</html>

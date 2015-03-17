@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-rgbled.html'></link>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-rgbled id='rgb' red='6' green='8' blue='7'></wa-rgbled>
+  </web-arduino>
+
+  <button id='redBtn'>red</button>
+  <button id='greenBtn'>green</button>
+  <button id='blueBtn'>blue</button>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    
+    board.on('ready', function() {
+      var redBtn = document.getElementById('redBtn'),
+        greenBtn = document.getElementById('greenBtn'),
+        blueBtn = document.getElementById('blueBtn'),
+        rgb = document.getElementById('rgb');
+
+      redBtn.addEventListener('click', function() {
+        rgb.setColor(255, 0, 0); // red , green , blue
+      }, false);
+
+      greenBtn.addEventListener('click', function() {
+        rgb.setColor(0, 255, 0); // red , green , blue
+      }, false);
+
+      blueBtn.addEventListener('click', function() {
+        rgb.setColor(0, 0, 255); // red , green , blue
+      }, false);
+    });
+  }, false);
+  </script>
+</body>
+
+</html>

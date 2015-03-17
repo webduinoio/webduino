@@ -1,0 +1,50 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Ultrasonic.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      trig: {
+        get: function() {
+          return this.getAttribute('trig');
+        },
+        set: function(val) {
+          this.setAttribute('trig', val);
+        }
+      },
+      echo: {
+        get: function() {
+          return this.getAttribute('echo');
+        },
+        set: function(val) {
+          this.setAttribute('echo', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var Ultrasonic = webduino.module.Ultrasonic;
+      this.ultrasonic = new Ultrasonic(board, board.getDigitalPin(this.trig), board.getDigitalPin(this.echo));
+    };
+
+    proto.ping = function(callback, interval) {
+      this.ultrasonic.ping(callback, interval);
+    }
+
+    proto.stopPing = function() {
+      this.ultrasonic.stopPing();
+    }
+
+    document.registerElement('wa-ultrasonic', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>servo</title>
+
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-servo.html'></link>
+
+  <style>
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  #msg.set::after {
+    content: "設定完成";
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-servo id='servo' pin='9'></wa-servo>
+  </web-arduino>
+
+  <div id="msg" class="waiting"></div>
+
+  <form>
+    <label>device : </label><input type="text" id="device" value="Mnw4">
+    <button class="setting" id="set">設定</button>
+    <button class="setting" id="run">繼續</button>
+  </form>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board'),
+      msg = document.getElementById('msg'),
+      device = document.getElementById('device'),
+      servo = document.getElementById('servo'),
+      setBtn = document.getElementById('set'),
+      runBtn = document.getElementById('run');
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      board.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    runBtn.addEventListener('click', function(e) {
+      run(20);
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    });
+
+    function ready() {
+      // 示意 board ready
+      msg.className = "set";
+      run(20);
+    }
+
+    function run(times) {
+      var DIST = 90,
+        TIMES = 1000,
+        count = 0,
+        dist = DIST;
+
+      setTimeout(function rd() {
+        var angle = parseInt(servo.angle);
+
+        count++;
+
+        if (angle === 0 || angle === 180) {
+          dist = dist > 0 ? -DIST : DIST;
+        } 
+
+        angle += dist;
+        servo.angle = angle;
+
+        if (count < times ) {
+          setTimeout(rd, TIMES);
+        }
+      }, TIMES);
+    }
+  });
+  </script>
+</body>
+
+</html>

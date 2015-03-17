@@ -1,0 +1,61 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Led.js"></script>
+  <script type="text/javascript" src="../webduino-js/src/module/RGBLed.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      red: {
+        get: function() {
+          return this.getAttribute('red');
+        },
+        set: function(val) {
+          this.setAttribute('red', val);
+        }
+      },
+      green: {
+        get: function() {
+          return this.getAttribute('green');
+        },
+        set: function(val) {
+          this.setAttribute('green', val);
+        }
+      },
+      blue: {
+        get: function() {
+          return this.getAttribute('blue');
+        },
+        set: function(val) {
+          this.setAttribute('blue', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var RGBLed = webduino.module.RGBLed;
+
+      this.rgbled = new RGBLed(
+        board,
+        board.getDigitalPin(this.red),
+        board.getDigitalPin(this.green),
+        board.getDigitalPin(this.blue),
+        RGBLed.COMMON_ANODE);
+    };
+
+    proto.setColor = function(r, g, b) {
+      this.rgbled.setColor(r, g, b);
+    }
+
+    document.registerElement('wa-rgbled', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

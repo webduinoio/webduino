@@ -1,0 +1,7 @@
+{
+  "name": "Web components for Webduino",
+  "dependencies": {
+    "webcomponentsjs": "~0.5.5",
+    "webduino-js": "webduinoio/webduino-js#0.1.0"
+  }
+}

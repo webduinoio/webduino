@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Jigglypuff</title>
+
+  <style>
+  img {
+    display: none;
+    width: 100%;
+    max-width: 300px;
+  }
+  #jigglypuff.ready img.stand {
+    display: block;
+  }
+  #jigglypuff.action img.sing {
+    display: block;
+  }
+  #control {
+    width: 100%;
+    max-width: 300px;
+    margin: 10px 0 10px 0;
+  }
+  #control button {
+    display: inline-block;
+    width: 40%;
+    height: 50px;
+  }
+  #control.start .msg::after {
+    content: "超音波啟動中...";
+  }
+  #control.starting .msg::after {
+    content: "超音波已啟動";
+  }
+  form {
+    width: 100%;
+    max-width: 300px;
+  }
+  form>* {
+    margin-top: 2px;
+  }
+  form>input {
+    width: 40%;
+    height: 20px;
+  }
+  form>button {
+    width: 50%;
+    height: 50px;
+  }
+  button.setting::after {
+    content: "設定";
+  }
+  button.finish::after {
+    content: "設定完成";
+  }
+  </style>
+
+  <script src="../../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../../web-arduino.html'></link>
+  <link rel='import' href='../../wa-ultrasonic.html'></link>
+  <link rel='import' href='../../wa-led.html'></link>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-ultrasonic id='ultrasonic'></wa-ultrasonic>
+    <wa-led id='led'></wa-led>
+  </web-arduino>
+
+  <audio id='player'>
+    <source src="jigglypuff.mp3" type="audio/mpeg">
+  </audio>
+
+  <form>
+    <label>arduino: device</label>
+    <br>
+    <input type="text" id="device" value="rm63">
+    <br>
+
+    <label>超音波: trig / echo</label>
+    <br>
+    <input type="text" id="trig" value="11">/
+    <input type="text" id="echo" value="10">
+    <br>
+
+    <label>LED: pin / gnd</label>
+    <br>
+    <input type="text" id="pin" value="6">/
+    <input type="text" id="gnd" value="8">
+    <br>
+    <button class="setting" id="set"></button>
+  </form>
+
+  <div id="control">
+    <button id="start">啟動超音波</button>
+    <button id="stop">關閉</button>
+    <div class="msg"></div>
+  </div>
+
+  <div id="jigglypuff" class='ready'>
+    <img class="stand" src="stand.jpg">
+    <img class="sing" src="sing.gif">
+  </div>
+
+  <script type="text/javascript">
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board'),
+      ultrasonic = document.getElementById('ultrasonic'),
+      led = document.getElementById('led'),
+      device = document.getElementById('device'),
+      trig = document.getElementById('trig'),
+      echo = document.getElementById('echo'),
+      pin = document.getElementById('pin'),
+      gnd = document.getElementById('gnd'),
+      setBtn = document.getElementById('set');
+
+    setBtn.addEventListener('click', function(e) {
+      board.device = device.value;
+      ultrasonic.trig = trig.value;
+      ultrasonic.echo = echo.value;
+      led.pin = pin.value;
+      led.gnd = gnd.value;
+      board.on('ready', ready);
+      board.init();
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }, false);
+
+    function ready() {
+      var state,
+        control = document.getElementById('control'),
+        start = document.getElementById('start'),
+        stop = document.getElementById('stop'),
+        ultrasonic = document.getElementById('ultrasonic'),
+        jigglypuff = document.getElementById('jigglypuff'),
+        led = document.getElementById('led'),
+        player = document.getElementById('player');
+
+      // 示意 board ready
+      led.on();
+      setTimeout(function() {
+        led.off();
+      }, 1000);
+
+      stop.addEventListener('click', function() {
+        var ultrasonic = document.getElementById('ultrasonic');
+        control.className = "";
+        jigglypuff.className = "ready";
+        led.off();
+        ultrasonic.stopPing();
+        player.load();
+        state = "";
+        console.log('stop ping');
+      });
+
+      start.addEventListener('click', function() {
+        var ratio;
+
+        control.className = "start";
+        state = "start";
+
+        ultrasonic.ping(function(cm) {
+          // console.log(cm);
+          // 一公尺內唱歌、亮燈
+          if (state !== "start") {
+            return false;
+          } 
+
+          if (control.className !== "starting") {
+            control.className = "starting";
+          }
+
+          console.log('ping...', cm);
+          if (cm < 100) {
+            led.on();
+            player.play();
+            jigglypuff.className = "action";
+
+            // 調整音量、亮度
+            ratio = getRatio(cm / 100, 0.25);
+            player.volume = ratio;
+            led.intensity = ratio;
+          } else {
+            led.off();
+            player.load();
+            jigglypuff.className = "ready";
+          }
+        }, 500);
+
+      }, false);
+    }
+
+    function getRatio(val, step) {
+      var ro;
+
+      val = val < 0.05 ? 1 : (1 - val);
+      ro = Math.floor(val / step);
+      ro = ro * step;
+      return ro > 1 ? 1 : ro;
+    }
+
+  }, false);
+  </script>
+</body>
+
+</html>

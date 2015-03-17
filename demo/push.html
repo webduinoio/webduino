@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-button.html'></link>
+  <link rel='import' href='../wa-led.html'></link>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-button id='button' pin='11'></wa-button>
+    <wa-led id='led' pin='10'></wa-led>
+  </web-arduino>
+
+  <h1 id='msg'></h1>
+  <button id='btn'>Click Me</button>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+
+    board.on('ready', function() {
+      var button = document.getElementById('button'),
+        led = document.getElementById('led'),
+        btn = document.getElementById('btn');
+
+      button.on('pressed', function() {
+        led.toggle();
+      });
+
+      btn.addEventListener('click', function() {
+        led.toggle();
+      }, false);
+    });
+  }, false);
+  </script>
+</body>
+
+</html>

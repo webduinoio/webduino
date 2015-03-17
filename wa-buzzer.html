@@ -1,0 +1,92 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Buzzer.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      },
+      notes: {
+        get: function() {
+          return this.getAttribute('notes');
+        },
+        set: function(val) {
+          this.setAttribute('notes', val);
+        }
+      },
+      tempos: {
+        get: function() {
+          return this.getAttribute('tempos');
+        },
+        set: function(val) {
+          this.setAttribute('tempos', val);
+        }
+      },
+      frequency: {
+        get: function() {
+          return this.getAttribute('frequency');
+        },
+        set: function(val) {
+          this.setAttribute('frequency', val);
+        }
+      },
+      duration: {
+        get: function() {
+          return this.getAttribute('duration');
+        },
+        set: function(val) {
+          this.setAttribute('duration', val);
+        }
+      },
+      autoplay: {
+        get: function() {
+          return this.getAttribute('autoplay');
+        },
+        set: function(val) {
+          this.setAttribute('autoplay', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var Buzzer = webduino.module.Buzzer;
+      this.buzzer = new Buzzer(board, board.getDigitalPin(this.pin));
+
+      if (this.autoplay !== null) {
+        this.play();
+      }
+    };
+
+    proto.play = function() {
+      if (this.notes) {
+        this.buzzer.play(this.notes.split(','), this.tempos.split(','));
+      } else if (this.frequency) {
+        this.buzzer.tone(parseInt(this.frequency), parseInt(this.duration));
+      }
+    };
+
+    proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
+      if (this.buzzer && this.autoplay !== null) {
+        this.play();
+      }
+    };
+
+    document.registerElement('wa-buzzer', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

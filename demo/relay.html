@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>relay</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-relay.html'></link>
+  <style>
+  * {
+    font-size: 20px;
+  }
+  
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  
+  .btns {
+    padding: 5px;
+    font-size: 16px;
+    width: 85px;
+    color: #00AEFF;
+  }
+  
+  .container {
+    background-color: #f7f7f7;
+    padding: 0 10px 20px 10px;
+    border: 1px dotted #CCC;
+    width: 270px;
+    margin-top: 20px;
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-relay id='relay' pin='10'></wa-relay>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <div class="container">
+    <p>Use the buttons below to switch the Relay to on or off.</p>
+    <button id='on' class="btns" type="button">ON</button>
+    <button id='off' class="btns" type="button">OFF</button>
+    <button id='toggle' class="btns" type="button">TOGGLE</button>
+  </div>
+  <p>relay pin : 10</p>
+  <p>利用繼電器，控制電燈。</p>
+  <p id='ledstatus'>none</p>
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board'),
+      msg = document.getElementById('msg'),
+      device = document.getElementById('device'),
+      relay = document.getElementById('relay'),
+      setBtn = document.getElementById('set'),
+      onBtn = document.getElementById('on'),
+      offBtn = document.getElementById('off'),
+      toggleBtn = document.getElementById('toggle'),
+      ledstatus = document.getElementById('ledstatus');
+
+    device.setAttribute('value', localStorage.device || "");
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    function ready() {
+      // 示意 board ready
+      msg.className = "set";
+      run();
+    }
+
+    function run() {
+      onBtn.addEventListener('click', function(e) {
+        relay.on();
+        ledstatus.innerHTML = "Relay on!";
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      }, false);
+
+      offBtn.addEventListener('click', function(e) {
+        relay.off();
+        ledstatus.innerHTML = "Relay off!";
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      }, false);
+
+      toggleBtn.addEventListener('click', function(e) {
+        relay.toggle();
+        ledstatus.innerHTML = "Relay toggle!";
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      }, false);
+    }
+  });
+  </script>
+</body>
+
+</html>

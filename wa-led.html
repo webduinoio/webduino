@@ -1,0 +1,116 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Led.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      },
+      intensity: {
+        get: function() {
+          return this.getAttribute('intensity');
+        },
+        set: function(val) {
+          this.setAttribute('intensity', val);
+        }
+      },
+      gnd: {
+        get: function() {
+          return this.getAttribute('gnd');
+        },
+        set: function(val) {
+          this.setAttribute('gnd', val);
+        }
+      },
+      state: {
+        get: function() {
+          return this.getAttribute('state');
+        },
+        set: function(val) {
+          this.setAttribute('state', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var observer, config,
+        Led = webduino.module.Led;
+
+      this.led = new Led(board, board.getDigitalPin(this.pin));
+
+      if (this.state === 'on') {
+        this.on();
+      }
+    };
+
+    proto.createGnd_ = function() {
+      var gndLed;
+
+      if (this.gnd) {
+        if (this.gndLed) {
+          this.gndLed.parentNode.removeChild(this.gndLed);
+        }
+        gndLed = document.createElement('wa-led');
+        gndLed.setAttribute('pin', this.gnd);
+        this.parentNode.appendChild(gndLed);
+        this.gndLed = gndLed;
+      }
+    };
+
+    proto.on = function() {
+      this.led.on();
+    };
+
+    proto.off = function() {
+      this.led.off();
+    };
+
+    proto.toggle = function() {
+      this.led.toggle();
+    };
+
+    proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
+      if (this.led) {
+        switch (attrName) {
+          case 'state':
+            newVal === "on" ? this.on() : this.off();
+            break;
+          case 'gnd':
+            this.createGnd_();
+            break;
+          case 'intensity':
+            this.led.intensity = newVal;
+            break;
+        }
+      }
+    };
+
+    proto.createdCallback = function() {
+      this.createGnd_();
+    };
+
+    proto.detachedCallback = function() {
+      if (this.gndLed) {
+        this.gndLed.parentNode.removeChild(this.gndLed);
+      }
+    };
+
+    document.registerElement('wa-led', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

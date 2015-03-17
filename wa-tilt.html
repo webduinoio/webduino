@@ -1,0 +1,58 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Tilt.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var events, tilt,
+        self = this,
+        Tilt = webduino.module.Tilt,
+        TiltEvent = webduino.module.TiltEvent;
+
+      events = new webduino.Events();
+      tilt = new Tilt(board, board.getDigitalPin(self.pin));
+
+      self.events_ = events;
+      self.tilt = tilt;
+
+      tilt.on(TiltEvent.HIGH, function() {
+        events.emit('high');
+      });
+
+      tilt.on(TiltEvent.LOW, function() {
+        events.emit('low');
+      });
+    };
+
+    proto.on = function(eventType, handler) {
+      this.events_.on(eventType, handler);
+    };
+
+    proto.off = function(eventType, handler) {
+      this.events_.off(eventType, handler);
+    };
+
+    document.registerElement('wa-tilt', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>
