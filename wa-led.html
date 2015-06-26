@@ -67,16 +67,16 @@
       }
     };
 
-    proto.on = function() {
-      this.led.on();
+    proto.on = function(callback) {
+      this.led.on(callback);
     };
 
-    proto.off = function() {
-      this.led.off();
+    proto.off = function(callback) {
+      this.led.off(callback);
     };
 
-    proto.toggle = function() {
-      this.led.toggle();
+    proto.toggle = function(callback) {
+      this.led.toggle(callback);
     };
 
     proto.attributeChangedCallback = function(attrName, oldVal, newVal) {

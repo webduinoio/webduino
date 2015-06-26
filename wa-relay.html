@@ -37,16 +37,16 @@
       }
     };
 
-    proto.on = function() {
-      this.relay.on();
+    proto.on = function(callback) {
+      this.relay.on(callback);
     };
 
-    proto.off = function() {
-      this.relay.off();
+    proto.off = function(callback) {
+      this.relay.off(callback);
     };
 
-    proto.toggle = function() {
-      this.relay.toggle();
+    proto.toggle = function(callback) {
+      this.relay.toggle(callback);
     };
 
     proto.attributeChangedCallback = function(attrName, oldVal, newVal) {

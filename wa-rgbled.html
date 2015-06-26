@@ -46,8 +46,8 @@
         RGBLed.COMMON_ANODE);
     };
 
-    proto.setColor = function(r, g, b) {
-      this.rgbled.setColor(r, g, b);
+    proto.setColor = function(r, g, b, callback) {
+      this.rgbled.setColor(r, g, b, callback);
     }
 
     document.registerElement('wa-rgbled', {
