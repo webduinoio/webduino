@@ -75,7 +75,6 @@
     <p>Set blink interval and click button to start blinking.</p>
     <label>Blink interval(ms): </label><input id="blink-interval" type="number" value="1000">
     <button id="blink" class="btns" type="button">BLINK</button>
-    <button id="stop-blink" class="btns" type="button">STOP</button>
   </div>
   <div class="container">
     <p>Change led state to on/off/blink (1000 as blink interval).</p>
@@ -98,7 +97,6 @@
       ledstatus = document.getElementById('ledstatus'),
       blinkInterval = document.getElementById('blink-interval'),
       blinkBtn = document.getElementById('blink'),
-      stopBlinkBtn = document.getElementById('stop-blink'),
       ledstate = document.getElementById('ledstate'),
       setStateBtn = document.getElementById('set-state');
 
@@ -127,7 +125,10 @@
 
       var statecb = function() {
         ledstate.value = led.state;
-      }
+        if(led.state === 'blink') {
+          ledstatus.innerHTML = (this._pin.value) ? "led blinks!(on)" : "led blinks!(off)";
+        }
+      };
       statecb();
 
       onBtn.addEventListener('click', function(e) {
@@ -157,14 +158,6 @@
       blinkBtn.addEventListener('click', function(e) {
         led.blink(blinkInterval.value, statecb);
         ledstatus.innerHTML = "led blinks!";
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-      }, false);
-
-      stopBlinkBtn.addEventListener('click', function(e) {
-        led.stopBlink(statecb);
-        ledstatus.innerHTML = "led stopped!";
         e.stopPropagation();
         e.preventDefault();
         return false;

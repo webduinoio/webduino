@@ -121,17 +121,6 @@
       this.led.blink(this._blinkInterval, this._statecb);
     };
 
-    /**
-     * Stop led blinking.
-     * @param {Function} [callback] - Led state changed callback.
-     */
-    proto.stopBlink = function(callback) {
-      if (this.state === 'blink') {
-        this._statecb = callback;
-        this.state = 'off';
-      }
-    };
-
     proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
       if (this.led) {
         switch (attrName) {
