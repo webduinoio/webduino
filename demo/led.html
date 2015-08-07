@@ -13,6 +13,11 @@
     font-size: 20px;
   }
   
+  input, button {
+    width: 100px;
+    margin: 5px 0;
+  }
+  
   #msg.default::after {
     content: "訊息";
   }
@@ -66,6 +71,16 @@
     <button id='off' class="btns" type="button">OFF</button>
     <button id='toggle' class="btns" type="button">TOGGLE</button>
   </div>
+  <div class="container">
+    <p>Set blink interval and click button to start blinking.</p>
+    <label>Blink interval(ms): </label><input id="blink-interval" type="number" value="1000">
+    <button id="blink" class="btns" type="button">BLINK</button>
+  </div>
+  <div class="container">
+    <p>Change led state to on/off/blink (1000 as blink interval).</p>
+    <label>Current State: </label><input id="ledstate">
+    <button id="set-state" class="btns" type="button">SET</button>
+  </div>
   <p>led pin : 10</p>
   <p>控制 LED</p>
   <p id='ledstatus'>none</p>
@@ -79,7 +94,11 @@
       onBtn = document.getElementById('on'),
       offBtn = document.getElementById('off'),
       toggleBtn = document.getElementById('toggle'),
-      ledstatus = document.getElementById('ledstatus');
+      ledstatus = document.getElementById('ledstatus'),
+      blinkInterval = document.getElementById('blink-interval'),
+      blinkBtn = document.getElementById('blink'),
+      ledstate = document.getElementById('ledstate'),
+      setStateBtn = document.getElementById('set-state');
 
     device.setAttribute('value', localStorage.device || "");
 
@@ -103,8 +122,17 @@
     }
 
     function run() {
+
+      var statecb = function() {
+        ledstate.value = led.state;
+        if(led.state === 'blink') {
+          ledstatus.innerHTML = (this._pin.value) ? "led blinks!(on)" : "led blinks!(off)";
+        }
+      };
+      statecb();
+
       onBtn.addEventListener('click', function(e) {
-        led.on();
+        led.on(statecb);
         ledstatus.innerHTML = "led on!";
         e.stopPropagation();
         e.preventDefault();
@@ -112,7 +140,7 @@
       }, false);
 
       offBtn.addEventListener('click', function(e) {
-        led.off();
+        led.off(statecb);
         ledstatus.innerHTML = "led off!";
         e.stopPropagation();
         e.preventDefault();
@@ -120,8 +148,23 @@
       }, false);
 
       toggleBtn.addEventListener('click', function(e) {
-        led.toggle();
+        led.toggle(statecb);
         ledstatus.innerHTML = "led toggle!";
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      }, false);
+
+      blinkBtn.addEventListener('click', function(e) {
+        led.blink(blinkInterval.value, statecb);
+        ledstatus.innerHTML = "led blinks!";
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      }, false);
+
+      setStateBtn.addEventListener('click', function(e) {
+        led.state = ledstate.value;
         e.stopPropagation();
         e.preventDefault();
         return false;

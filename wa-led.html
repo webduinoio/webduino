@@ -48,9 +48,11 @@
 
       this.led = new Led(board, board.getDigitalPin(this.pin));
 
-      if (this.state === 'on') {
-        this.on();
-      }
+      this._statecb = null;
+      this._blinkInterval = null;
+
+      // Initial led state according to wa-led state
+      this.attributeChangedCallback('state', null, this.state);
     };
 
     proto.createGnd_ = function() {
@@ -67,23 +69,71 @@
       }
     };
 
+    /**
+     * Set led state to on.
+     * @param {Function} [callback] - Led state changed callback.
+     */
     proto.on = function(callback) {
-      this.led.on(callback);
+      this._statecb = callback;
+      this.state = 'on';
+    };
+    proto._on = function() {
+      this.led.on(this._statecb);
     };
 
+    /**
+     * Set led state to off.
+     * @param {Function} [callback] - Led state changed callback.
+     */
     proto.off = function(callback) {
-      this.led.off(callback);
+      this._statecb = callback;
+      this.state = 'off';
+    };
+    proto._off = function() {
+      this.led.off(this._statecb);
     };
 
+    /**
+     * Toggle led state between on/off according to current state.
+     * @param {Function} [callback] - Led state changed callback.
+     */
     proto.toggle = function(callback) {
-      this.led.toggle(callback);
+      this._statecb = callback;
+      this.state = this.state === 'blink' || this.state === 'on' ? 'off' : 'on';
+    };
+
+    /**
+     * Set led state to blink. Both msec and callback are optional
+     * and can be passed as the only one parameter.
+     * @param {number} [msec] - Led blinking interval.
+     * @param {Function} [callback] - Led state changed callback.
+     */
+    proto.blink = function(msec, callback) {
+      if (arguments.length === 1 && typeof arguments[0] === 'function') {
+        callback = arguments[0];
+      }
+      this.state = null;
+      this._blinkInterval = msec;
+      this._statecb = callback;
+      this.state = 'blink';
+    };
+    proto._blink = function() {
+      this.led.blink(this._blinkInterval, this._statecb);
     };
 
     proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
       if (this.led) {
         switch (attrName) {
           case 'state':
-            newVal === "on" ? this.on() : this.off();
+            if (newVal === 'on') {
+              this._on();
+            } else if (newVal === 'off') {
+              this._off();
+            } else if (newVal === 'blink') {
+              this._blink();
+              this._blinkInterval = null;
+            }
+            this._statecb = null;
             break;
           case 'gnd':
             this.createGnd_();
