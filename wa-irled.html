@@ -1,0 +1,50 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/IRLed.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      encode: {
+        get: function() {
+          return this.getAttribute('encode');
+        },
+        set: function(val) {
+          this.setAttribute('encode', val);
+        }
+      },
+      initsend: {
+        get: function() {
+          return this.getAttribute('initsend');
+        },
+        set: function(val) {
+          this.setAttribute('initsend', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var observer, config, IRLed = webduino.module.IRLed;
+      this.irled = new IRLed(board, this.encode);
+      
+      if (this.initsend === 'true') {
+        this.send();
+      }
+    };
+
+    proto.send = function() {
+      this.irled.send();
+    };
+
+    document.registerElement('wa-irled', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>
