@@ -6,7 +6,7 @@
   "keywords": ["arduino", "webduino", "web-components"],
   "license": "MIT",
   "dependencies": {
-    "webcomponentsjs": "= 0.7.3",
-    "webduino-js": "= 0.1.7"
+    "webcomponentsjs": "0.x",
+    "webduino-js": "0.x"
   }
 }
