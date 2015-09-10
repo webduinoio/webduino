@@ -47,6 +47,14 @@
         set: function(val) {
           this.setAttribute('intensity', val);
         }
+      },
+      data: {
+        get: function() {
+          return this.getAttribute('data');
+        },
+        set: function(val) {
+          this.setAttribute('data', val);
+        }
       }
     });
 
@@ -54,34 +62,62 @@
       var observer, config,
         Max7219 = webduino.module.Max7219;
 
-      this.max7219 = new Max7219(board,
-        board.getDigitalPin(this.din), board.getDigitalPin(this.cs), board.getDigitalPin(this.clk));
-      this.clear();
+      this.max7219 = new Max7219(board, board.getDigitalPin(this.din), board.getDigitalPin(this.cs), board.getDigitalPin(this.clk));
+      this.off();
 
-      if (this.state === 'on') {
-        this.on();
+      if (this.state === 'on' && this.data) {
+        this.on(this.data);
       }
-      if (this.intensity != null) {
-        var tmp = this.intensity;
-        this.intensity = -1;
-        this.intensity = tmp;
+
+      if (this.intensity) {
+        this.max7219.intensity = this.intensity;
       }
     };
 
     proto.on = function(data) {
-      if (arguments.length == 0) {
-        this.max7219.on();
-      } else {
+      if (data) {
         this.max7219.on(data);
+      } else {
+        this.max7219.on();
       }
     };
 
     proto.off = function() {
+      this.animateStop();
       this.max7219.off();
     };
 
-    proto.clear = function() {
-      this.max7219.clear();
+    proto.animate = function(data, times, duration, callback) {
+      var p = 0;
+
+      if (typeof arguments[arguments.length - 1] === 'function') {
+        callback = arguments[arguments.length - 1];
+      } else {
+        callback = function() {};
+      }
+
+      var run = function() {
+        this.max7219.on(data[p++ % data.length]);
+        this.timer_ = setTimeout(run, times);
+      }.bind(this);
+
+      var stop = function() {
+        clearTimeout(this.timer_);
+        callback();
+      }.bind(this);
+
+      if (times && times > 0) {
+        run();
+      }
+
+      if (duration && duration > 0) {
+        this.timerDuration_ = setTimeout(stop, duration);
+      }
+    };
+
+    proto.animateStop = function() {
+      clearTimeout(this.timer_);
+      clearTimeout(this.timerDuration_);
     };
 
     proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
