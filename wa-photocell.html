@@ -1,0 +1,51 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Photocell.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      analogpin: {
+        get: function() {
+          return this.getAttribute('analogpin');
+        },
+        set: function(val) {
+          this.setAttribute('analogpin', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var Photocell = webduino.module.Photocell;
+      this.photocell = new Photocell(board, this.analogpin);
+    };
+
+    proto.on = function(callback) {
+      if (typeof callback === 'function') {
+        this.photocell.on(function(val) {
+          val = val.toFixed(5);
+          callback(val);
+        });
+      }
+    };
+
+    proto.off = function() {
+      this.photocell.off();
+    };
+
+    proto.detachedCallback = function() {
+      this.off();
+    };
+
+    document.registerElement('wa-photocell', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>
