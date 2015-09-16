@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>LED on/off</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-led.html'></link>
+  <link rel='import' href='../wa-adxl345.html'></link>
+  <style>
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  
+  input {
+    width: 100px;
+    margin: 5px 0;
+  }
+  
+  button {
+    margin: 5px 0;
+  }
+  
+  #light img {
+    width: 25%;
+    display: none;
+  }
+  
+  #light.off img:first-child {
+    display: inline-block;
+  }
+  
+  #light.on img:last-child {
+    display: inline-block;
+  }
+  
+  #msgRecv {
+    word-break: break-all;
+    height: 300px;
+    width: 100%;
+    overflow: auto;
+  }
+  
+  #msgRecv::before {
+    content: 'message:';
+  }
+  </style>
+
+  <style>
+    .camera{
+      margin:20% auto;
+      width:200px;
+      height:200px;
+      perspective-origin:50% 50%;
+      -moz-perspective-origin:50% 50%;
+      -webkit-perspective-origin:50% 50%;
+      perspective:500px;
+      -moz-perspective:500px;
+      -webkit-perspective:500px;
+    }
+    .space{
+      position:relative;
+      width:100%;
+      height:100%;
+      transform-style:preserve-3d;
+      -moz-transform-style:preserve-3d;
+      -webkit-transform-style:preserve-3d;
+      transform-origin:center center -50px;
+      -moz-transform-origin:center center -50px;
+      -webkit-transform-origin:center center -50px;
+    }
+    .space div{
+      position:absolute;
+      width:100px;
+      height:100px;
+      font-size:50px;
+      text-align:center;
+      line-height:100px;
+    }
+    .box1{
+      background:rgba(255,0,0,.2);
+      transform:translateX(50px) translateY(50px);
+      -moz-transform:translateX(50px) translateY(50px);
+      -webkit-transform:translateX(50px) translateY(50px);
+    }
+    .box2{
+      background:rgba(255,255,0,.2);
+      transform-origin:left top;
+      -moz-transform-origin:left top;
+      -webkit-transform-origin:left top;
+      transform:translateX(150px) translateY(50px) rotateY(90deg);
+      -moz-transform:translateX(150px) translateY(50px) rotateY(90deg);
+      -webkit-transform:translateX(150px) translateY(50px) rotateY(90deg);
+    }
+    .box3{
+      background:rgba(0,255,0,.2);
+      transform:translateX(50px) translateY(50px) translateZ(-100px) rotateY(180deg);
+      -moz-transform:translateX(50px) translateY(50px) translateZ(-100px) rotateY(180deg);
+      -webkit-transform:translateX(50px) translateY(50px) translateZ(-100px) rotateY(180deg);
+    }
+    .box4{
+      background:rgba(255,0,255,.2);
+      transform-origin:right top;
+      -moz-transform-origin:right top;
+      -webkit-transform-origin:right top;
+      transform:translateX(-50px) translateY(50px) rotateY(-90deg);
+      -moz-transform:translateX(-50px) translateY(50px) rotateY(-90deg);
+      -webkit-transform:translateX(-50px) translateY(50px) rotateY(-90deg);
+    }
+    .box5{
+      background:rgba(0,0,255,.2);
+      transform-origin:center bottom;
+      -moz-transform-origin:center bottom;
+      -webkit-transform-origin:center bottom;
+      transform:translateX(50px) translateY(-50px) rotateX(90deg);
+      -moz-transform:translateX(50px) translateY(-50px) rotateX(90deg);
+      -webkit-transform:translateX(50px) translateY(-50px) rotateX(90deg);
+    }
+    .box6{
+      background:rgba(0,255,255,.2);
+      transform-origin:center top;
+      -moz-transform-origin:center top;
+      -webkit-transform-origin:center top;
+      transform:translateX(50px) translateY(150px) rotateX(-90deg);
+      -moz-transform:translateX(50px) translateY(150px) rotateX(-90deg);
+      -webkit-transform:translateX(50px) translateY(150px) rotateX(-90deg);
+    }
+  </style>
+</head>
+
+<body>
+  <web-arduino id="board">
+    <wa-led id='led' pin='10'></wa-led>
+    <wa-adxl345 id='adxl' sensitive="0" baseaxis="z"></wa-adxl345>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p>led pin : 10</p>
+  <p>adxl - gnd, vcc, sda pin: A4, scl pin: A5</p>
+  <p>說明：
+    <br>1. roll, pitch 逆時針會得到正值
+    <br>2. baseaxis，決定修正的向量以那個為準，可輸入值為 x,y,z，預設為 z，表示將 adxl345 平放，正面朝上，此時 z 軸會得到接近 1g(m/s^2)，x, y 為 0g。
+    <br>3. sensitive，敏感度。當感測器偵測到的數值，變化要超過敏感度，才會拋出資料。
+  </p>
+
+  <div style="position: relative">
+    <p>點擊燈炮，啟動三軸加速度計</p>
+    <div id='light' class="off">
+      <img src='http://i.imgur.com/T5H4MHE.png'></img>
+      <img src='http://i.imgur.com/8qFj2Ou.png'></img>
+    </div>
+    <div style="position: absolute; top: 0; right: 0; width: 60%;">
+      <button id='clearMsg'>clear message</button>
+      <br>
+      <div id='msgRecv'></div>
+    </div>
+  </div>
+  
+  <div class="camera">
+    <div class="space">
+      <div class="box1">^</div>
+      <div class="box2"></div>
+      <div class="box3"></div>
+      <div class="box4"></div>
+      <div class="box5"></div>
+      <div class="box6"></div>
+    </div>
+  </div>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    var device = document.getElementById('device');
+    var light = document.getElementById('light');
+    var clearMsg = document.getElementById('clearMsg');
+    var msgRecv = document.getElementById('msgRecv');
+    var msg = document.getElementById('msg');
+    var setBtn = document.getElementById('set');
+
+    device.setAttribute('value', localStorage.device || "");
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      light.className = 'off';
+      msgRecv.innerHTML = '';
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    clearMsg.addEventListener('click', function() {
+      msgRecv.innerHTML = '';
+    });
+
+    function ready() {
+      var led = document.getElementById('led');
+      var adxl = document.getElementById('adxl');
+
+      light.addEventListener('click', function() {
+        if (light.className == 'on') {
+          light.className = 'off';
+          led.off();
+          adxl.off();
+        } else {
+          light.className = 'on';
+          led.on();
+          adxl.on(callback);
+        }
+      }, false);
+
+      msg.className = "set";
+    }
+
+    function callback(x, y, z, roll, pitch) {
+      var msgRecv = document.getElementById('msgRecv');
+      var space = document.querySelectorAll('.space');
+      var ss = document.createElement('span');
+      ss.innerHTML += '<br>';
+      ss.innerHTML += '<span '+ (x < 0 ? 'style="color:red;" ' : '') +'>x: ' + x + '</span>';
+      ss.innerHTML += '<span '+ (y < 0 ? 'style="color:red;" ' : '') +'>, y: ' + y + '</span>';
+      ss.innerHTML += '<span '+ (z < 0 ? 'style="color:red;" ' : '') +'>, z: ' + z + '</span>';
+      ss.innerHTML += '<span>, roll: '+ roll + '</span>';
+      ss.innerHTML += '<span>, pitch: '+ pitch + '</span>';
+      ss.innerHTML += '<span>, ' + new Date().toLocaleTimeString() + '</span>';
+      msgRecv.insertBefore(ss, msgRecv.childNodes[0]);
+
+      space[0].style.transform = 'rotateX(' + (roll) + 'deg) rotateY(' + (0-pitch) + 'deg) rotateZ(0deg)';
+    }
+  });
+  </script>
+</body>
+
+</html>
