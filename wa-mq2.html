@@ -1,0 +1,74 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/MQ2.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      analogpin: {
+        get: function() {
+          return this.getAttribute('analogpin');
+        },
+        set: function(val) {
+          this.setAttribute('analogpin', val);
+        }
+      },
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var MQ2 = webduino.module.MQ2;
+      var pin = this.pin ? board.getDigitalPin(this.pin) : null;
+      var analogPin = this.analogpin || null;
+      this.mq2 = new MQ2(board, analogPin, pin);
+    };
+
+    proto.on = function(type, handler) {
+      var callback;
+
+      if (typeof type === 'function') {
+        callback = type;
+        if (typeof callback === 'function') {
+          this.mq2.on(function(val) {
+            val = val.toFixed(5);
+            callback(val);
+          });
+        }
+      }
+
+      if (typeof type === 'string' && typeof handler === 'function') {
+        this.mq2.onEvent(type, handler);
+      }
+    };
+
+    proto.off = function(type, handler) {
+      if (arguments.length) {
+        this.mq2.offEvent(type, handler);
+      } else {
+        this.mq2.off();
+      }
+    };
+
+    proto.detachedCallback = function() {
+      this.off();
+    };
+
+    document.registerElement('wa-mq2', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>
