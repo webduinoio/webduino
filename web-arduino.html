@@ -28,6 +28,22 @@
         set: function(val) {
           this.setAttribute('server', val);
         }
+      },
+      multi: {
+        get: function() {
+          return this.getAttribute('multi');
+        },
+        set: function(val) {
+          this.setAttribute('multi', val);
+        }
+      },
+      autoReconnect: {
+        get: function() {
+          return this.getAttribute('autoReconnect');
+        },
+        set: function(val) {
+          this.setAttribute('autoReconnect', val);
+        }
       }
     });
 
@@ -36,16 +52,21 @@
         self = this,
         WebArduino = webduino.WebArduino,
         BoardEvent = webduino.BoardEvent,
+        util = webduino.util,
         events = self.events_,
         device = self.device,
-        server = self.server;
+        server = self.server,
+        multi = self.multi,
+        autoReconnect = self.autoReconnect;
 
       if (device) {
-        board = (server ? new WebArduino({
-          server: server,
-          device: self.device
-        }) : new WebArduino(device));
-        self.board = board;
+        self.board = board = new WebArduino(util.extend({
+          device: device
+        }, {
+          server: server || undefined,
+          multi: multi || undefined,
+          autoReconnect: autoReconnect || undefined
+        }));
 
         board.on(BoardEvent.READY, function(event) {
           var children = self.children;
