@@ -1,0 +1,128 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>點矩陣(max7219)</title>
+  <script src="../../webcomponentsjs/webcomponents.min.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-led.html'></link>
+  <link rel='import' href='../wa-max7219.html'></link>
+  <style>
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  
+  input {
+    width: 100px;
+    margin: 5px 0;
+  }
+  
+  button {
+    margin: 5px 0;
+  }
+
+  #exec {
+    display: block;
+  }
+
+  textarea {
+    width: 20%;
+    height: 20%;
+    min-width: 200px;
+    min-height: 200px;
+  }
+  
+  </style>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-led id='led' pin='11'></wa-led>
+    <wa-max7219 id='max' din='9' cs='10' clk='12' state="on" data="006cd682c66c38c"></wa-max7219>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p>led pin : 11</p>
+  <p>max7219 din : 9, cs : 10, clk : 12</p>
+  <a href='http://marty5499.github.io/webduino/max7219/genLED2.html' target="_blank">匯製代碼</a>
+  <button id='exec' disabled>執行</button>
+  <textarea id="dataInput">
+    182424183c081c14,
+    182424183c081c22,
+    182424183c0a3c40,
+    304848303c4a3c20,
+    304848303c483c04  
+  </textarea>
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    var device = document.getElementById('device');
+    var led = document.getElementById('led');
+    var max = document.getElementById('max');
+    var msg = document.getElementById('msg');
+    var setBtn = document.getElementById('set');
+    var exec = document.getElementById('exec');
+    var dataInput = document.getElementById('dataInput');
+
+    device.setAttribute('value', localStorage.device || "");
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      setBtn.setAttribute('disabled', true);
+      msg.className = "setting";
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    exec.addEventListener('click', function() {
+      if (!dataInput.value) {
+        return false;
+      } 
+
+      var data = dataInput.value.replace(/\s/g, '').split(',');
+      max.animate(data, 200, 5000, function() {
+        console.log('結束');
+      });
+    }, false);
+
+    function ready() {
+      msg.className = "set";
+      exec.removeAttribute('disabled');
+      led.on();
+    }
+
+  });
+  </script>
+</body>
+
+</html>

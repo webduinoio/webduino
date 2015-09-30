@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>紅外線發射(irled)</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-led.html'></link>
+  <link rel='import' href='../wa-irled.html'></link>
+
+  <style>
+  html, body {
+    width: 100%;
+    height: 100%;
+  }
+
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+
+  #light {
+    width: 50%;
+    height: 50%;
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .off img:last-child,
+  .on img:first-child {
+    display: none;
+  }
+  </style>
+  
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-led id='led' pin='10' state="off"></wa-led>
+    <wa-irled id='irled' initsend="false" encode='20df10ef'></wa-irled>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p>led pin : 10</p>
+  <p>irled pin : 9 (固定)</p>
+  <p>電視開關訊號 : 20df10ef</p>
+  <p>點擊圖示，燈泡亮起時，發出紅外線訊號</p>
+  <div id='light' class="off">
+    <img src='http://i.imgur.com/i0CHoAt.jpg'></img>
+    <img src='http://i.imgur.com/rhEBE6x.jpg'></img>
+  </div>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    var device = document.getElementById('device');
+    var msg = document.getElementById('msg');
+    var setBtn = document.getElementById('set');
+
+    device.setAttribute('value', localStorage.device || "");
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      this.setAttribute('disabled', true);
+      msg.className = "setting";
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    function ready() {
+      var light = document.getElementById('light');
+      msg.className = "set";
+      light.className = 'off';
+      light.addEventListener('click', lightClickHandler);
+    }
+
+    function lightClickHandler() {
+      var led = document.getElementById('led');
+      var irled = document.getElementById('irled');
+      if (led.state == 'on') {
+        this.className = 'off';
+        led.off();
+      } else {
+        this.className = 'on';
+        led.on();
+        irled.send();
+      }
+    }
+
+  }, false);
+  </script>
+</body>
+
+</html>

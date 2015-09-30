@@ -1,0 +1,48 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/IRRecv.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      pin: {
+        get: function() {
+          return this.getAttribute('pin');
+        },
+        set: function(val) {
+          this.setAttribute('pin', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var IRRecv = webduino.module.IRRecv;
+      this.irrecv = new IRRecv(board, board.getDigitalPin(this.pin));
+    };
+
+    proto.on = function(callback, errorCallback) {
+      this.irrecv.on(callback, errorCallback);
+      this._state = 'on';
+    };
+
+    proto.off = function() {
+      this.irrecv.off();
+      this._state = 'off';
+    };
+
+    proto.detachedCallback = function() {
+      this.off();
+    };
+
+    document.registerElement('wa-irrecv', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

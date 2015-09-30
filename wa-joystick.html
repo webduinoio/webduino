@@ -1,0 +1,59 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Button.js"></script>
+  <script type="text/javascript" src="../webduino-js/src/module/Joystick.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      x: {
+        get: function() {
+          return this.getAttribute('x');
+        }
+      },
+      y: {
+        get: function() {
+          return this.getAttribute('y');
+        }
+      },
+      z: {
+        get: function() {
+          return this.getAttribute('z');
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var Joystick = webduino.module.Joystick;
+      var JoystickEvent = webduino.module.JoystickEvent;
+      var events = new webduino.Events();
+      var joystick = new Joystick(board, this.x, this.y, board.getDigitalPin(this.z));
+
+      this.events_ = events;
+      this.joystick = joystick;
+
+      joystick.on(JoystickEvent.MESSAGE, function(x, y, z) {
+        events.emit('message', Array.prototype.slice.apply(arguments));
+      });
+    };
+
+    proto.on = function(eventType, handler) {
+      this.events_.on(eventType, handler);
+    };
+
+    proto.off = function(eventType, handler) {
+      this.events_.off(eventType, handler);
+    };
+
+    document.registerElement('wa-joystick', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

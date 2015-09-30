@@ -1,0 +1,94 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/ADXL345.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      sensitive: {
+        get: function() {
+          return this.getAttribute('sensitive');
+        },
+        set: function(val) {
+          this.setAttribute('sensitive', val);
+        }
+      },
+      baseaxis: {
+        get: function() {
+          return this.getAttribute('baseaxis');
+        },
+        set: function(val) {
+          this.setAttribute('baseaxis', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var ADXL345 = webduino.module.ADXL345;
+      this.adxl345 = new ADXL345(board);
+      if (this.sensitive) {
+        this.setSensitivity(this.sensitive);
+      }
+      if (this.baseaxis) {
+        this.setBaseAxis(this.baseaxis);
+      }
+    };
+
+    proto.on = function(callback) {
+      if (typeof callback === 'function') {
+        this.adxl345.on(callback);
+        this._state = 'on';
+      }
+    };
+
+    proto.off = function() {
+      this.adxl345.off();
+      this._state = 'off';
+    };
+
+    proto.setSensitivity = function(val) {
+      // 1g = 256;
+      if (this.adxl345) {
+        val = parseInt(val);
+        this.adxl345.setSensitivity(val);
+      }
+    };
+
+    proto.setBaseAxis = function(val) {
+      var re = /^[x|y|z]$/i;
+
+      if (this.adxl345 && re.test(val)) {
+        this.adxl345.setBaseAxis(val.toLowerCase());
+        this.adxl345.refresh();
+      }
+    };
+
+    proto.detachedCallback = function() {
+      this.off();
+    };
+
+    proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
+      if (this.adxl345) {
+        switch (attrName) {
+          case 'sensitive':
+            this.setSensitivity(newVal);
+            break;
+          case 'baseaxis':
+            this.setBaseAxis(newVal);
+            break;
+        }
+      }
+    };
+
+    document.registerElement('wa-adxl345', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

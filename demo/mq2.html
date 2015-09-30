@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>氣體傳感器(mq2)</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-led.html'></link>
+  <link rel='import' href='../wa-mq2.html'></link>
+  <style>
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  
+  input {
+    width: 100px;
+    margin: 5px 0;
+  }
+  
+  button {
+    margin: 5px 0;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .msgContainer {
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    width: 60%;
+  }
+  
+  #light img {
+    width: 25%;
+    display: none;
+  }
+  
+  #light.off img:first-child {
+    display: inline-block;
+  }
+  
+  #light.on img:last-child {
+    display: inline-block;
+  }
+  
+  #msgRecv {
+    word-break: break-all;
+    height: 300px;
+    width: 100%;
+    overflow: auto;
+  }
+  
+  #msgRecv::before {
+    content: 'message:';
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id="board">
+    <wa-led id="led" pin="9"></wa-led>
+    <wa-mq2 id="mq2" analogpin="5"></wa-mq2>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p>led pin : 9</p>
+  <p>mq2 analog pin : 5</p>
+  <p>說明：
+    <br>值介於 0 ~ 1 之間，偵測瓦斯/煙霧的量愈多，數字愈大。
+    <br>這裡的範例，使用類比腳來偵測，也可以使用數位腳的方式。
+    <br>也就是 DO 接上數位腳後，採用下方被註解的程式碼。
+    <br>盡量不同時使用二者，有機會掛掉。
+  </p>
+
+  <div class="container">
+    <p>點擊燈炮，啟動光敏電阻</p>
+    <div id='light' class="off">
+      <img src='http://i.imgur.com/T5H4MHE.png'></img>
+      <img src='http://i.imgur.com/8qFj2Ou.png'></img>
+    </div>
+    <div class="msgContainer">
+      <button id='clearMsg'>clear message</button>
+      <br>
+      <div id='msgRecv'></div>
+    </div>
+  </div>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    var device = document.getElementById('device');
+    var light = document.getElementById('light');
+    var clearMsg = document.getElementById('clearMsg');
+    var msgRecv = document.getElementById('msgRecv');
+    var msg = document.getElementById('msg');
+    var setBtn = document.getElementById('set');
+
+    device.setAttribute('value', localStorage.device || "");
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      light.className = 'off';
+      msgRecv.innerHTML = '';
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    clearMsg.addEventListener('click', function() {
+      msgRecv.innerHTML = '';
+    });
+
+    function ready() {
+      var led = document.getElementById('led');
+      var mq2 = document.getElementById('mq2');
+
+      light.addEventListener('click', function() {
+        if (light.className == 'on') {
+          light.className = 'off';
+          led.off();
+          mq2.off();
+          // mq2.off('detected', detected);
+        } else {
+          light.className = 'on';
+          led.on();
+          mq2.on(success);
+          // mq2.on('detected', detected);
+        }
+      }, false);
+
+      msg.className = "set";
+    }
+
+    function success(val) {
+      var msgRecv = document.getElementById('msgRecv');
+      var ss = document.createElement('span');
+      ss.innerHTML += '<br>';
+      ss.innerHTML += val;
+      ss.innerHTML += '<span>, ' + new Date().toLocaleTimeString() + '</span>';
+      msgRecv.insertBefore(ss, msgRecv.childNodes[0]);
+    }
+
+    // function detected() {
+    //   var msgRecv = document.getElementById('msgRecv');
+    //   var ss = document.createElement('span');
+    //   ss.innerHTML += '<br>';
+    //   ss.innerHTML += 'detected...';
+    //   msgRecv.insertBefore(ss, msgRecv.childNodes[0]);
+    // }
+  });
+  </script>
+</body>
+
+</html>
