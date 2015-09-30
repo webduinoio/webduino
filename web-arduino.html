@@ -44,6 +44,22 @@
         set: function(val) {
           this.setAttribute('autoReconnect', val);
         }
+      },
+      path: {
+        get: function() {
+          return this.getAttribute('path');
+        },
+        set: function(val) {
+          this.setAttribute('path', val);
+        }
+      },
+      baudRate: {
+        get: function() {
+          return this.getAttribute('baudRate');
+        },
+        set: function(val) {
+          this.setAttribute('baudRate', val);
+        }
       }
     });
 
@@ -51,22 +67,33 @@
       var board, ev,
         self = this,
         WebArduino = webduino.WebArduino,
+        Arduino = webduino.Arduino,
         BoardEvent = webduino.BoardEvent,
         util = webduino.util,
         events = self.events_,
         device = self.device,
         server = self.server,
         multi = self.multi,
-        autoReconnect = self.autoReconnect;
+        autoReconnect = self.autoReconnect,
+        path = self.path,
+        baudRate = self.baudRate;
 
-      if (device) {
-        self.board = board = new WebArduino(util.extend({
-          device: device
-        }, {
-          server: server || undefined,
-          multi: multi || undefined,
-          autoReconnect: autoReconnect || undefined
-        }));
+      if (device || path) {
+        if (device) {
+          self.board = board = new WebArduino(util.extend({
+            device: device
+          }, {
+            server: server || undefined,
+            multi: multi || undefined,
+            autoReconnect: autoReconnect || undefined
+          }));
+        } else {
+          self.board = board = new Arduino(util.extend({
+            path: path
+          }, {
+            baudRate: baudRate || undefined
+          }));
+        }
 
         board.on(BoardEvent.READY, function(event) {
           var children = self.children;
