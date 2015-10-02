@@ -92,13 +92,14 @@
     <button class="setting" id="set">設定</button>
   </form>
   <p>led pin : 9</p>
-  <p>photocell analog pin : 5</p>
+  <p>joystick, gnd, vcc, vrx analog pin : 4, vry analog pin : 5, sw pin : 10</p>
   <p>說明：
-    <br>值介於 0 ~ 1 之間，偵測的環境愈亮，數字愈大。
+    <br>x, y 軸的值介於 0 ~ 1 之間，初始值約 0.5 上下。
+    <br>z 為按鈕，值為 0, 1，按下時值為 1。
   </p>
 
   <div class="container">
-    <p>點擊燈炮，啟動光敏電阻</p>
+    <p>點擊燈炮，開始接收搖捍發出的訊息</p>
     <div id='light' class="off">
       <img src='http://i.imgur.com/T5H4MHE.png'></img>
       <img src='http://i.imgur.com/8qFj2Ou.png'></img>
