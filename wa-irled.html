@@ -35,8 +35,19 @@
       }
     };
 
-    proto.send = function() {
-      this.irled.send();
+    proto.send = function(code) {
+      code = code || this.encode;
+      this.irled.send(code);
+    };
+
+    proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
+      if (this.irled) {
+        switch (attrName) {
+          case 'encode':
+            this.irled.updateEncode(newVal);
+            break;
+        }
+      }
     };
 
     document.registerElement('wa-irled', {
