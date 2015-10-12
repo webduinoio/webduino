@@ -88,36 +88,11 @@
     };
 
     proto.animate = function(data, times, duration, callback) {
-      var p = 0;
-
-      if (typeof arguments[arguments.length - 1] === 'function') {
-        callback = arguments[arguments.length - 1];
-      } else {
-        callback = function() {};
-      }
-
-      var run = function() {
-        this.max7219.on(data[p++ % data.length]);
-        this.timer_ = setTimeout(run, times);
-      }.bind(this);
-
-      var stop = function() {
-        clearTimeout(this.timer_);
-        callback();
-      }.bind(this);
-
-      if (times && times > 0) {
-        run();
-      }
-
-      if (duration && duration > 0) {
-        this.timerDuration_ = setTimeout(stop, duration);
-      }
+      this.max7219.animate(data, times, duration, callback);
     };
 
     proto.animateStop = function() {
-      clearTimeout(this.timer_);
-      clearTimeout(this.timerDuration_);
+      this.max7219.animateStop();
     };
 
     proto.attributeChangedCallback = function(attrName, oldVal, newVal) {
