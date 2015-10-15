@@ -104,24 +104,26 @@
 
     // 遙控器的編碼
     var dataMap = {
-      '0ff6897': '1',
-      '0ff9867': '2',
-      '0ffb04f': '3',
-      '0ff30cf': '4',
-      '0ff18e7': '5',
-      '0ff7a85': '6',
-      '0ff10ef': '7',
-      '0ff38c7': '8',
-      '0ff5aa5': '9',
-      '0ff4ab5': '0',
-      '0ff42bd': '*',
-      '0ff52ad': '#',
-      '0ffa857': 'down',
-      '0ff22dd': 'left',
-      '0ffc23d': 'right',
-      '0ff629d': 'up',
-      '0ff2fd': 'ok'
+      '00ff6897': '1',
+      '00ff9867': '2',
+      '00ffb04f': '3',
+      '00ff30cf': '4',
+      '00ff18e7': '5',
+      '00ff7a85': '6',
+      '00ff10ef': '7',
+      '00ff38c7': '8',
+      '00ff5aa5': '9',
+      '00ff4ab5': '0',
+      '00ff42bd': '*',
+      '00ff52ad': '#',
+      '00ffa857': 'down',
+      '00ff22dd': 'left',
+      '00ffc23d': 'right',
+      '00ff629d': 'up',
+      '00ff02fd': 'ok'
     };
+
+    dataMap['20df10ef'] = '電視開關';
 
     device.setAttribute('value', localStorage.device || "");
 
