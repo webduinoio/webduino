@@ -4,11 +4,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>紅外線接收(irrecv)</title>
+  <title>可變電組(pot: potentiometer)</title>
   <script src="../../webcomponentsjs/webcomponents.js"></script>
   <link rel='import' href='../web-arduino.html'></link>
   <link rel='import' href='../wa-led.html'></link>
-  <link rel='import' href='../wa-irrecv.html'></link>
+  <link rel='import' href='../wa-pot.html'></link>
   <style>
   * {
     font-size: 20px;
@@ -42,6 +42,17 @@
   button {
     margin: 5px 0;
   }
+
+  .container {
+    position: relative;
+  }
+
+  .msgContainer {
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    width: 60%;
+  }
   
   #light img {
     width: 25%;
@@ -58,6 +69,9 @@
   
   #msgRecv {
     word-break: break-all;
+    height: 300px;
+    width: 100%;
+    overflow: auto;
   }
   
   #msgRecv::before {
@@ -69,7 +83,7 @@
 <body>
   <web-arduino id="board">
     <wa-led id='led' pin='9'></wa-led>
-    <wa-irrecv id='irrecv' pin='10'></wa-irrecv>
+    <wa-pot id='pot' analogpin='5'></wa-pot>
   </web-arduino>
   <div id="msg" class="waiting"></div>
   <form>
@@ -78,19 +92,23 @@
     <button class="setting" id="set">設定</button>
   </form>
   <p>led pin : 9</p>
-  <p>irrecv pin : 10</p>
+  <p>pot analog pin : 5</p>
   <p>說明：
-    <br>紅外線接收器面向自已，由左自右腳位依序為 Vout(讀取紅外線訊號)，GND，VCC。
+    <br>值介於 0 ~ 1 之間。
   </p>
-  <p>點擊燈炮，啟動紅外線接收</p>
-  <div id='light' class="off">
-    <img src='http://i.imgur.com/T5H4MHE.png'></img>
-    <img src='http://i.imgur.com/8qFj2Ou.png'></img>
-  </div>
-  <button id='clearMsg'>clear message</button>
-  <br>
-  <div id='msgRecv'></div>
 
+  <div class="container">
+    <p>點擊燈炮，啟動可變電阻</p>
+    <div id='light' class="off">
+      <img src='http://i.imgur.com/T5H4MHE.png'></img>
+      <img src='http://i.imgur.com/8qFj2Ou.png'></img>
+    </div>
+    <div class="msgContainer">
+      <button id='clearMsg'>clear message</button>
+      <br>
+      <div id='msgRecv'></div>
+    </div>
+  </div>
 
   <script>
   window.addEventListener('WebComponentsReady', function() {
@@ -101,29 +119,6 @@
     var msgRecv = document.getElementById('msgRecv');
     var msg = document.getElementById('msg');
     var setBtn = document.getElementById('set');
-
-    // 遙控器的編碼
-    var dataMap = {
-      '00ff6897': '1',
-      '00ff9867': '2',
-      '00ffb04f': '3',
-      '00ff30cf': '4',
-      '00ff18e7': '5',
-      '00ff7a85': '6',
-      '00ff10ef': '7',
-      '00ff38c7': '8',
-      '00ff5aa5': '9',
-      '00ff4ab5': '0',
-      '00ff42bd': '*',
-      '00ff52ad': '#',
-      '00ffa857': 'down',
-      '00ff22dd': 'left',
-      '00ffc23d': 'right',
-      '00ff629d': 'up',
-      '00ff02fd': 'ok'
-    };
-
-    dataMap['20df10ef'] = '電視開關';
 
     device.setAttribute('value', localStorage.device || "");
 
@@ -148,17 +143,17 @@
 
     function ready() {
       var led = document.getElementById('led');
-      var irrecv = document.getElementById('irrecv');
+      var pot = document.getElementById('pot');
 
       light.addEventListener('click', function() {
         if (light.className == 'on') {
           light.className = 'off';
           led.off();
-          irrecv.off();
+          pot.off();
         } else {
           light.className = 'on';
           led.on();
-          irrecv.on(success, errorHandler);
+          pot.on(success);
         }
       }, false);
 
@@ -168,16 +163,10 @@
     function success(val) {
       var msgRecv = document.getElementById('msgRecv');
       var ss = document.createElement('span');
-      ss.textContent = (dataMap[val] || val) + ',';
-      msgRecv.appendChild(ss);
-    }
-
-    function errorHandler(val, originalMsg) {
-      var msgRecv = document.getElementById('msgRecv');
-      var ss = document.createElement('span');
-      ss.textContent = val + ',';
-      msgRecv.appendChild(ss);
-      console.log('error:', originalMsg);
+      ss.innerHTML += '<br>';
+      ss.innerHTML += val;
+      ss.innerHTML += '<span>, ' + new Date().toLocaleTimeString() + '</span>';
+      msgRecv.insertBefore(ss, msgRecv.childNodes[0]);
     }
   });
   </script>
