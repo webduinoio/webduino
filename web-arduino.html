@@ -60,6 +60,14 @@
         set: function(val) {
           this.setAttribute('baudRate', val);
         }
+      },
+      address: {
+        get: function() {
+          return this.getAttribute('address');
+        },
+        set: function(val) {
+          this.setAttribute('address', val);
+        }
       }
     });
 
@@ -76,9 +84,10 @@
         multi = self.multi,
         autoReconnect = self.autoReconnect,
         path = self.path,
-        baudRate = self.baudRate;
+        baudRate = self.baudRate,
+        address = self.address;
 
-      if (device || path) {
+      if (device || path || address) {
         if (device) {
           self.board = board = new WebArduino(util.extend({
             device: device
@@ -87,12 +96,18 @@
             multi: multi || undefined,
             autoReconnect: autoReconnect || undefined
           }));
-        } else {
+        } else if (path) {
           self.board = board = new Arduino(util.extend({
+            transport: 'serial',
             path: path
           }, {
             baudRate: baudRate || undefined
           }));
+        } else {
+          self.board = board = new Arduino({
+            transport: 'bluetooth',
+            address: address
+          });
         }
 
         board.on(BoardEvent.READY, function(event) {
