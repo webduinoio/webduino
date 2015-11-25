@@ -1,0 +1,39 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/RFID.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype);
+
+    proto.init_ = function(board) {
+      var RFID = webduino.module.RFID;
+      this.rfid = new RFID(board);
+    };
+
+    proto.on = function(callback) {
+      if (typeof callback === 'function') {
+        this.rfid.on(callback);
+      }
+    };
+
+    proto.off = function() {
+      this.rfid.off();
+    };
+
+    proto.detachedCallback = function() {
+      this.off();
+    };
+
+    document.registerElement('wa-rfid', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>
