@@ -7,23 +7,25 @@
 <body>
   <script>
   (function() {
-    var proto = Object.create(HTMLElement.prototype);
+    var proto = Object.create(HTMLElement.prototype, {
+      isReading: {
+        get: function() {
+          return !!(this.rfid && this.rfid.isReading);
+        }
+      }
+    });
 
     proto.init_ = function(board) {
       var RFID = webduino.module.RFID;
       this.rfid = new RFID(board);
     };
 
-    proto.listen = function(enterHandler, leaveHandler) {
-      this.rfid.listen(enterHandler, leaveHandler);
+    proto.read = function(enterHandler, leaveHandler) {
+      this.rfid.read(enterHandler, leaveHandler);
     };
 
-    proto.stopListen = function() {
-      this.rfid.stopListen();
-    };
-
-    proto.isListened = function() {
-      return this.rfid.isListened();
+    proto.stopRead = function() {
+      this.rfid.stopRead();
     };
 
     proto.on = function(evtType, handler) {
