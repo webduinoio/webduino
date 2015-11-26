@@ -14,18 +14,28 @@
       this.rfid = new RFID(board);
     };
 
-    proto.on = function(callback) {
-      if (typeof callback === 'function') {
-        this.rfid.on(callback);
-      }
+    proto.listen = function(enterHandler, leaveHandler) {
+      this.rfid.listen(enterHandler, leaveHandler);
     };
 
-    proto.off = function() {
-      this.rfid.off();
+    proto.stopListen = function() {
+      this.rfid.stopListen();
+    };
+
+    proto.isListened = function() {
+      return this.rfid.isListened();
+    };
+
+    proto.on = function(evtType, handler) {
+      this.rfid.on(evtType, handler);
+    };
+
+    proto.off = function(evtType, handler) {
+      this.rfid.off(evtType, handler);
     };
 
     proto.detachedCallback = function() {
-      this.off();
+      this.rfid.destroy();
     };
 
     document.registerElement('wa-rfid', {

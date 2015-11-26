@@ -146,10 +146,10 @@
       light.addEventListener('click', function() {
         if (light.className == 'on') {
           light.className = 'off';
-          rfid.off();
+          rfid.stopListen();
         } else {
           light.className = 'on';
-          rfid.on(success);
+          rfid.listen(success, success);
         }
       }, false);
 
