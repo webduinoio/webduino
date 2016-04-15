@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>土壤溼度</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-soil.html'></link>
+  <link rel='import' href='../wa-photocell.html'></link>
+  <style>
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  
+  input {
+    width: 100px;
+    margin: 5px 0;
+  }
+  
+  button {
+    margin: 5px 0;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .msgContainer {
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    width: 60%;
+  }
+  
+  #light img {
+    width: 25%;
+    display: none;
+  }
+  
+  #light.off img:first-child {
+    display: inline-block;
+  }
+  
+  #light.on img:last-child {
+    display: inline-block;
+  }
+  
+  #msgRecv {
+    word-break: break-all;
+    height: 300px;
+    width: 100%;
+    overflow: auto;
+  }
+  
+  #msgRecv::before {
+    content: 'message:';
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id="board">
+    <wa-soil id='soil' analogpin='5'></wa-soil>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p>soil analog pin : 5 (A3)</p>
+  <p>說明：
+    <br>值介於 0 ~ 100% 之間，數字愈大，溼度愈高。
+  </p>
+
+  <div class="container">
+    <p>點擊燈炮，啟動土壤溼度感測器</p>
+    <div id='light' class="off">
+      <img src='http://i.imgur.com/T5H4MHE.png'></img>
+      <img src='http://i.imgur.com/8qFj2Ou.png'></img>
+    </div>
+    <div class="msgContainer">
+      <button id='clearMsg'>clear message</button>
+      <br>
+      <div id='msgRecv'></div>
+    </div>
+  </div>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    var device = document.getElementById('device');
+    var light = document.getElementById('light');
+    var clearMsg = document.getElementById('clearMsg');
+    var msgRecv = document.getElementById('msgRecv');
+    var msg = document.getElementById('msg');
+    var setBtn = document.getElementById('set');
+
+    device.setAttribute('value', localStorage.device || "");
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      light.className = 'off';
+      msgRecv.innerHTML = '';
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    clearMsg.addEventListener('click', function() {
+      msgRecv.innerHTML = '';
+    });
+
+    function ready() {
+      var soil = document.getElementById('soil');
+
+      light.addEventListener('click', function() {
+        if (light.className == 'on') {
+          light.className = 'off';
+          soil.off();
+        } else {
+          light.className = 'on';
+          soil.on(success);
+        }
+      }, false);
+
+      msg.className = "set";
+    }
+
+    function success(val) {
+      var msgRecv = document.getElementById('msgRecv');
+      var ss = document.createElement('span');
+      ss.innerHTML += '<br>';
+      ss.innerHTML += val;
+      ss.innerHTML += '<span>, ' + new Date().toLocaleTimeString() + '</span>';
+      msgRecv.insertBefore(ss, msgRecv.childNodes[0]);
+    }
+  });
+  </script>
+</body>
+
+</html>
