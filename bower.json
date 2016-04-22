@@ -7,6 +7,6 @@
   "license": "MIT",
   "dependencies": {
     "webcomponentsjs": "0.x",
-    "webduino-js": "0.x"
+    "webduino-js": "master"
   }
 }
