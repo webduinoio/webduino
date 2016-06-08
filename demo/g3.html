@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Detect humidity and temperature</title>
+
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-g3.html'></link>
+
+  <style>
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  #msg.set::after {
+    content: "設定完成";
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id='board'>
+    <wa-g3 id='g3' rx='2' tx='3'></wa-g3>
+  </web-arduino>
+
+  <div id="msg" class="waiting"></div>
+
+  <form>
+    <label>device : </label><input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+
+  <p>需接地及5V電源, G3 rx: 2 , tx: 3</p>
+  <p>使用G3傳感器，偵測現場PM25 , PM10</p>
+  <p id='data'>none</p>
+  
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board'),
+      msg = document.getElementById('msg'),
+      device = document.getElementById('device'),
+      g3 = document.getElementById('g3'),
+      setBtn = document.getElementById('set'),
+      data = document.getElementById('data');
+
+    device.setAttribute('value', localStorage.device || "");
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    function ready() {
+      // 示意 board ready
+      msg.className = "set";
+      run();
+    }
+
+    function run(times) {
+      g3.read(function(evt) {
+        data.innerHTML = Date() + "<br>PM25:" + evt.pm25 + ", PM10:" + evt.pm10;
+      }, 3000);
+    }
+  });
+  </script>
+</body>
+
+</html>

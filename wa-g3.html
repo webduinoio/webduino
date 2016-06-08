@@ -1,0 +1,52 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="../webduino-js/src/module/G3.js"></script>
+</head>
+
+<body>
+    <script>
+    (function() {
+        var proto = Object.create(HTMLElement.prototype, {
+            rx: {
+                get: function() {
+                    return this.getAttribute('rx');
+                },
+                set: function(val) {
+                    this.setAttribute('rx', val);
+                }
+            },
+            tx: {
+                get: function() {
+                    return this.getAttribute('tx');
+                },
+                set: function(val) {
+                    this.setAttribute('tx', val);
+                }
+            }
+        });
+
+        proto.init_ = function(board) {
+            var G3 = webduino.module.G3;
+            this.g3 = new G3(board,
+                board.getDigitalPin(this.rx),
+                board.getDigitalPin(this.tx));
+        };
+
+        proto.read = function(callback, interval) {
+            this.g3.read(callback, interval);
+        }
+
+        proto.stopRead = function() {
+            this.g3.stopRead();
+        }
+
+        document.registerElement('wa-g3', {
+            prototype: proto
+        });
+
+    })();
+    </script>
+</body>
+
+</html>
