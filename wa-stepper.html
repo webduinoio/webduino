@@ -1,0 +1,103 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/Stepper.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      stepperNumber: {
+        get: function() {
+          return this.getAttribute('stepperNumber');
+        },
+        set: function(val) {
+          this.setAttribute('stepperNumber', val);
+        }
+      },
+      interface: {
+        get: function() {
+          return this.getAttribute('interface');
+        },
+        set: function(val) {
+          this.setAttribute('interface', val);
+        }
+      },
+      stepsPerRevolution: {
+        get: function() {
+          return this.getAttribute('stepsPerRevolution');
+        },
+        set: function(val) {
+          this.setAttribute('stepsPerRevolution', val);
+        }
+      },
+      pin1: {
+        get: function() {
+          return this.getAttribute('pin1');
+        },
+        set: function(val) {
+          this.setAttribute('pin1', val);
+        }
+      },
+      pin2: {
+        get: function() {
+          return this.getAttribute('pin2');
+        },
+        set: function(val) {
+          this.setAttribute('pin2', val);
+        }
+      },
+      pin3: {
+        get: function() {
+          return this.getAttribute('pin3');
+        },
+        set: function(val) {
+          this.setAttribute('pin3', val);
+        }
+      },
+      pin4: {
+        get: function() {
+          return this.getAttribute('pin4');
+        },
+        set: function(val) {
+          this.setAttribute('pin4', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      var Stepper = webduino.module.Stepper;
+      var infoObj = {
+        "stepperNumber": this.stepperNumber,
+        "interface": this.interface,
+        "stepsPerRevolution": this.stepsPerRevolution,
+        "pin1": this.pin1,
+        "pin2": this.pin2,
+        "pin3": this.pin3,
+        "pin4": this.pin4
+      };
+      this.stepper = new Stepper(board, infoObj);
+    };
+
+    proto.on = function(command, callback) {
+      if (typeof callback === 'function') {
+        this.stepper.on(command, function(val) {
+          callback(val);
+        });
+      }
+    };
+
+    proto.detachedCallback = function() {
+      this.stepper.off();
+    };
+
+    document.registerElement('wa-stepper', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>

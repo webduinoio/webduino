@@ -2,38 +2,179 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>步進馬達</title>
   <script src="../../webcomponentsjs/webcomponents.js"></script>
   <link rel='import' href='../web-arduino.html'></link>
   <link rel='import' href='../wa-stepper.html'></link>
-
   <style>
-    img {
-      width: 200px;
-    }
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  
+  input {
+    width: 100px;
+    margin: 5px 0;
+  }
+  
+  button {
+    margin: 5px 0;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .msgContainer {
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    width: 60%;
+  }
+  
+  #light img {
+    width: 25%;
+    display: none;
+  }
+  
+  #light.off img:first-child {
+    display: inline-block;
+  }
+  
+  #light.on img:last-child {
+    display: inline-block;
+  }
+  
+  #msgRecv {
+    word-break: break-all;
+    height: 300px;
+    width: 100%;
+    overflow: auto;
+  }
+  
+  #msgRecv::before {
+    content: 'message:';
+  }
   </style>
 </head>
 
 <body>
-  <web-arduino id='board' device='wahaha'>
-    <wa-stepper id='stepper'></wa-stepper>
+  <web-arduino id="board">
+    <wa-stepper id='stepper' stepperNumber="2" interface="4" stepsPerRevolution="2048" pin1='8' pin2='9' pin3='10' pin4='11'></wa-stepper>
   </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p> ULN2003 達林頓晶片驅動步進馬達驅動板上的 IN1, IN2, IN3, IN4 分別接上四個數位腳位 8, 9, 10, 11<br>
+      stepperNumber：設定馬達的編號 0~5<br>
+      interface：馬達的相數<br>
+      stepsPerRevolution：馬達轉一圈的步數
+  </p>
 
-  <img src="http://www.hua.com/flower_picture/meiguihua/images/r17.jpg"></img>
-  <button id='rotate'>旋轉</button>
+  <p> 控制命令<br>
+      direction：0, 1 (CW clockwise 順時針, CCW counterclockwise 逆時針)<br>
+      stepNumber：轉動步數<br>
+      speed：步進馬達(型號28BYJ-48, 5V DC)，建議 10~160 單位(0.01 rad/sec)
+  </p>
+
+  <div class="container">
+    <p>點擊燈炮，步進馬達會執行指令</p>
+    <div id='light' class="off">
+      <img src='http://i.imgur.com/T5H4MHE.png'></img>
+      <img src='http://i.imgur.com/8qFj2Ou.png'></img>
+    </div>
+    <div class="msgContainer">
+      <img src="../img/stepper.jpg" width="100%" alt="">
+      <button id='clearMsg'>clear message</button>
+      <br>
+      <div id='msgRecv'></div>
+    </div>
+  </div>
 
   <script>
   window.addEventListener('WebComponentsReady', function() {
     var board = document.getElementById('board');
+    var device = document.getElementById('device');
+    var light = document.getElementById('light');
+    var clearMsg = document.getElementById('clearMsg');
+    var msgRecv = document.getElementById('msgRecv');
+    var msg = document.getElementById('msg');
+    var setBtn = document.getElementById('set');
 
-    board.on('ready', function() {
-      var rotate = document.getElementById('rotate'),
-        stepper = document.getElementById('stepper');
+    device.setAttribute('value', localStorage.device || "");
 
-      rotate.addEventListener('click', function() {
-        stepper.rotate();
-      }, false);
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      light.className = 'off';
+      msgRecv.innerHTML = '';
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    clearMsg.addEventListener('click', function() {
+      msgRecv.innerHTML = '';
     });
-  }, false);
+
+    function ready() {
+      var stepper = document.getElementById('stepper');
+
+      light.addEventListener('click', function() {
+        if (light.className == 'on') {
+          light.className = 'off';
+        } else {
+          light.className = 'on';
+          stepper.on({
+            "stepperNumber": stepper.getAttribute('stepperNumber'),
+            "direction": 0,
+            "stepNumber": 2048,
+            "speed": 160
+          }, success);
+        }
+      }, false);
+
+      msg.className = "set";
+    }
+
+    function success(val) {
+      var msgRecv = document.getElementById('msgRecv');
+      var ss = document.createElement('span');
+      ss.innerHTML += '<br>';
+      ss.innerHTML += 'stepperNumber: ' + val.stepperNumber;
+      ss.innerHTML += '<span>, ' + new Date().toLocaleTimeString() + '</span>';
+      msgRecv.insertBefore(ss, msgRecv.childNodes[0]);
+    }
+  });
   </script>
 </body>
 
