@@ -1,0 +1,66 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="../webduino-js/src/module/HX711.js"></script>
+</head>
+
+<body>
+    <script>
+    (function() {
+        var proto = Object.create(HTMLElement.prototype, {
+            sck: {
+                get: function() {
+                    return this.getAttribute('sck');
+                },
+                set: function(val) {
+                    this.setAttribute('sck', val);
+                }
+            },
+            dt: {
+                get: function() {
+                    return this.getAttribute('dt');
+                },
+                set: function(val) {
+                    this.setAttribute('dt', val);
+                }
+            },
+            state: {
+                get: function() {
+                    return this.getAttribute('state');
+                },
+                set: function(val) {
+                    this.setAttribute('state', val);
+                }
+            }
+        });
+
+        proto.init_ = function(board) {
+            var HX711 = webduino.module.HX711;
+            this.hx711 = new HX711(board, board.getDigitalPin(this.sck), board.getDigitalPin(this.dt));
+        };
+
+        proto.on = function(callback) {
+            if (typeof callback === 'function') {
+                this.hx711.on(callback);
+                this._state = 'on';
+            }
+        };
+
+        proto.off = function() {
+            this.hx711.off();
+            this._state = 'off';
+        };
+
+        proto.detachedCallback = function() {
+            this.off();
+        };
+
+        document.registerElement('wa-hx711', {
+            prototype: proto
+        });
+
+    })();
+    </script>
+</body>
+
+</html>
