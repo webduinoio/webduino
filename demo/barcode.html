@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Barcode Scanner</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-barcode.html'></link>
+  <style>
+  * {
+    font-size: 20px;
+  }
+
+  #msg.default::after {
+    content: "訊息";
+  }
+  
+  #msg.waiting::after {
+    content: "Loading...";
+  }
+  
+  #msg.ready::after {
+    content: "Ready!";
+  }
+  
+  #msg.setting::after {
+    content: "設定中...";
+  }
+  
+  #msg.set::after {
+    content: "設定完成";
+  }
+  
+  input {
+    width: 100px;
+    margin: 5px 0;
+  }
+  
+  button {
+    margin: 5px 0;
+  }
+  
+  #light img {
+    width: 25%;
+    display: none;
+  }
+  
+  #light.off img:first-child {
+    display: inline-block;
+  }
+  
+  #light.on img:last-child {
+    display: inline-block;
+  }
+  
+  #msgRecv {
+    word-break: break-all;
+    height: 300px;
+    width: 100%;
+    overflow: auto;
+  }
+  
+  #msgRecv::before {
+    content: 'message:';
+  }
+  </style>
+</head>
+
+<body>
+  <web-arduino id="board">
+    <wa-barcode id='barcode' rx='2' tx='3'></wa-barcode>
+  </web-arduino>
+  <div id="msg" class="waiting"></div>
+  <form>
+    <label>device : </label>
+    <input type="text" id="device">
+    <button class="setting" id="set">設定</button>
+  </form>
+  <p>說明：</p>
+  <div style="position: relative">
+    <p>點擊燈炮，啟動接收Barcode資料</p>
+    <div id='light' class="off">
+      <img src='http://i.imgur.com/T5H4MHE.png'></img>
+      <img src='http://i.imgur.com/8qFj2Ou.png'></img>
+    </div>
+    <div style="position: absolute; top: 0; right: 0; width: 60%;">
+      <button id='clearMsg'>clear message</button>
+      <br>
+      <div id='msgRecv'></div>
+    </div>
+  </div>
+
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    var device = document.getElementById('device');
+    var light = document.getElementById('light');
+    var clearMsg = document.getElementById('clearMsg');
+    var msgRecv = document.getElementById('msgRecv');
+    var msg = document.getElementById('msg');
+    var setBtn = document.getElementById('set');
+
+    device.setAttribute('value', localStorage.device || "");
+
+    msg.className = "ready";
+
+    setBtn.addEventListener('click', function(e) {
+      msg.className = "setting";
+      light.className = 'off';
+      msgRecv.innerHTML = '';
+      board.device = device.value;
+      localStorage.device = device.value;
+      board.on('ready', ready);
+      board.init();
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }, false);
+
+    clearMsg.addEventListener('click', function() {
+      msgRecv.innerHTML = '';
+    });
+
+    function ready() {
+      var barcode = document.getElementById('barcode');
+
+      light.addEventListener('click', function() {
+        if (light.className == 'on') {
+          light.className = 'off';
+          barcode.off();
+        } else {
+          light.className = 'on';
+          barcode.on(callback);
+        }
+      }, false);
+
+      msg.className = "set";
+    }
+
+    function callback(scanData) {
+      console.log('callback',scanData);
+      var msgRecv = document.getElementById('msgRecv');
+      msgRecv.innerHTML = scanData+'<br>'+msgRecv.innerHTML;
+    }
+  });
+  </script>
+</body>
+
+</html>
