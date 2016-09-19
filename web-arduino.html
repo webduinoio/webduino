@@ -9,7 +9,6 @@
 <body>
   <script>
   (function() {
-
     var count_ = 0;
 
     var proto = Object.create(HTMLElement.prototype, {
@@ -68,6 +67,14 @@
         set: function(val) {
           this.setAttribute('address', val);
         }
+      },
+      ws: {
+        get: function() {
+          return this.getAttribute('ws');
+        },
+        set: function(val) {
+          this.setAttribute('ws', val);
+        }
       }
     });
 
@@ -85,9 +92,10 @@
         autoReconnect = self.autoReconnect,
         path = self.path,
         baudRate = self.baudRate,
-        address = self.address;
+        address = self.address,
+        ws = self.ws;
 
-      if (device || path || address) {
+      if (device || path || address || ws) {
         if (device) {
           self.board = board = new WebArduino(util.extend({
             device: device
@@ -103,11 +111,16 @@
           }, {
             baudRate: baudRate || undefined
           }));
-        } else {
+        } else if (address){
           self.board = board = new Arduino({
             transport: 'bluetooth',
             address: address
           });
+        } else {
+          self.board = board = new Arduino({
+            transport: 'websocket',
+            url: ws
+          })
         }
 
         board.on(BoardEvent.READY, function(event) {
