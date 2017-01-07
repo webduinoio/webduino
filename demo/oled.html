@@ -1,0 +1,29 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>OLED(SSD1306)</title>
+  <script src="../../webcomponentsjs/webcomponents.min.js"></script>
+  <link rel='import' href='../web-arduino.html'></link>
+  <link rel='import' href='../wa-ssd1306.html'></link>
+</head>
+
+<body>
+  <web-arduino id='board' device="10X417v3">
+    <wa-ssd1306 id='display' x='0' y='0' textSize='2' text="OLED Test">
+    </wa-ssd1306>
+  </web-arduino>
+  <script>
+  window.addEventListener('WebComponentsReady', function() {
+    var board = document.getElementById('board');
+    board.on('ready', function() {
+      console.log("board ready...");
+      display.textSize = 4;
+      display.print(40, 30, "OK");
+    });
+  });
+  </script>
+</body>
+
+</html>

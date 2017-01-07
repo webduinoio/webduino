@@ -1,0 +1,73 @@
+<html>
+
+<head>
+  <script type="text/javascript" src="../webduino-js/src/module/SSD1306.js"></script>
+</head>
+
+<body>
+  <script>
+  (function() {
+    var proto = Object.create(HTMLElement.prototype, {
+      textSize: {
+        get: function() {
+          return this.getAttribute('textSize');
+        },
+        set: function(val) {
+          this.setAttribute('textSize', val);
+        }
+      },
+      x: {
+        get: function() {
+          return this.getAttribute('x');
+        },
+        set: function(val) {
+          this.setAttribute('x', val);
+        }
+      },
+      y: {
+        get: function() {
+          return this.getAttribute('y');
+        },
+        set: function(val) {
+          this.setAttribute('y', val);
+        }
+      },
+      text: {
+        get: function() {
+          return this.getAttribute('text');
+        },
+        set: function(val) {
+          this.setAttribute('text', val);
+        }
+      }
+    });
+
+    proto.init_ = function(board) {
+      this.display = new webduino.module.SSD1306(board);
+      this.display.clear();
+      this.display.textSize = this.textSize;
+      this.display.print(this.x, this.y, this.text);
+    };
+
+    proto.print = function(x, y, text) {
+      this.display.textSize = this.textSize;
+      this.display.print(x, y, text);
+    };
+
+    proto.clear = function() {
+      this.display.clear();
+    };
+
+    proto.detachedCallback = function() {
+      //this.off();
+    };
+
+    document.registerElement('wa-ssd1306', {
+      prototype: proto
+    });
+
+  })();
+  </script>
+</body>
+
+</html>
