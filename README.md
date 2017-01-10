@@ -8,13 +8,6 @@ Web components for Webduino
 $ bower install webduino
 ```
 
-Build webduino-js dist files:
-
-```Shell
-$ cd bower_components/webduino-js
-$ npm install && npm run build
-```
-
 ## Usage
 
 Insert webduino web-components and polyfill:
